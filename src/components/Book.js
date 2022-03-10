@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as BooksAPI from '../BooksAPI';
+import PropTypes from 'prop-types';
 
 export default class Book extends Component {
   state = {
@@ -8,9 +9,11 @@ export default class Book extends Component {
 
   componentDidMount() {}
   handelUpdate = async (e) => {
+    console.log('hi');
+    e.persist();
     try {
+      this.props.handelBooksUpdate(this.props.book.id, e.target.value);
       await BooksAPI.update(this.props.book, e.target.value);
-      this.setState({ shelf: e.target.value });
     } catch (e) {
       console.log(e);
     }
@@ -30,7 +33,7 @@ export default class Book extends Component {
           />
           <div className='book-shelf-changer'>
             <select onChange={this.handelUpdate}>
-              <option value='move' disabled>
+              <option value='move' disabled selected>
                 Move to...
               </option>
               <option value='currentlyReading'>Currently Reading</option>
@@ -41,14 +44,29 @@ export default class Book extends Component {
           </div>
         </div>
         <div className='book-title'>{title}</div>
-        {authors.map((auther) => {
+        <div className='book-authors'>{authors}</div>
+        {/* {authors.map((auther) => {
           return (
             <div key={auther} className='book-authors'>
               {auther}
             </div>
           );
-        })}
+        })} */}
       </div>
     );
   }
 }
+Book.propTypes = {
+  book: PropTypes.object.isRequired,
+};
+Book.defaultProps = {
+  book: {
+    title: 'PropTypes.string.isRequired',
+    shelf: 'PropTypes.string.isRequired',
+    authors: 'PropTypes.string.isRequired',
+    imageLinks: {
+      smallThumbnail:
+        'http://books.google.com/books/content?id=pD6arNyKyi8C&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE70Rw0CCwNZh0SsYpQTkMbvz23npqWeUoJvVbi_gXla2m2ie_ReMWPl0xoU8Quy9fk0Zhb3szmwe8cTe4k7DAbfQ45FEzr9T7Lk0XhVpEPBvwUAztOBJ6Y0QPZylo4VbB7K5iRSk&source=gbs_api',
+    },
+  },
+};

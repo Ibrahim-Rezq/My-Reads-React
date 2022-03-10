@@ -18,7 +18,10 @@ export default class Bookshelf extends React.Component {
               {books.map((book) => {
                 return (
                   <li key={book.id}>
-                    <Book book={book} />
+                    <Book
+                      handelBooksUpdate={this.props.handelBooksUpdate}
+                      book={book}
+                    />
                   </li>
                 );
               })}

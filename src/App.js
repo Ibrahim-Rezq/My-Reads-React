@@ -2,6 +2,7 @@ import React from 'react';
 import * as BooksAPI from './BooksAPI';
 import './App.css';
 import Bookshelf from './components/Bookshelf';
+import SearchPage from './components/SearchPage';
 class BooksApp extends React.Component {
   state = {
     /**
@@ -19,52 +20,50 @@ class BooksApp extends React.Component {
   componentDidMount() {
     this.handelFetch();
   }
+
   handelFetch = async (e) => {
     try {
       const bookdata = await BooksAPI.getAll();
       this.setState({ books: await bookdata });
-      this.setState({
-        booksRead: this.state.books.filter((book) => {
-          return book.shelf === 'read';
-        }),
-        booksReading: this.state.books.filter((book) => {
-          return book.shelf === 'currentlyReading';
-        }),
-        booksWishlist: this.state.books.filter((book) => {
-          return book.shelf === 'wantToRead';
-        }),
-      });
+      this.setShelfs();
     } catch {
       console.error('error');
     }
   };
+  setShelfs = () => {
+    this.setState({
+      booksRead: this.state.books.filter((book) => {
+        return book.shelf === 'read';
+      }),
+      booksReading: this.state.books.filter((book) => {
+        return book.shelf === 'currentlyReading';
+      }),
+      booksWishlist: this.state.books.filter((book) => {
+        return book.shelf === 'wantToRead';
+      }),
+    });
+  };
+
+  handelBooksUpdate = (id, currShelf) => {
+    const fillterdBooks = this.state.books.filter((book) => {
+      return book.id !== id;
+    });
+    const theBook = this.state.books.filter((book) => {
+      return book.id === id;
+    })[0];
+    theBook.shelf = currShelf;
+    this.setState({ books: [...fillterdBooks, theBook] });
+    console.log(this.state.books);
+    this.setShelfs();
+    console.log('hi');
+  };
+  searchToggler = () => this.setState({ showSearchPage: false });
   render() {
+    console.log(this.state.books);
     return (
       <div className='app'>
         {this.state.showSearchPage ? (
-          <div className='search-books'>
-            <div className='search-books-bar'>
-              <button
-                className='close-search'
-                onClick={() => this.setState({ showSearchPage: false })}>
-                Close
-              </button>
-              <div className='search-books-input-wrapper'>
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
-                <input type='text' placeholder='Search by title or author' />
-              </div>
-            </div>
-            <div className='search-books-results'>
-              <ol className='books-grid' />
-            </div>
-          </div>
+          <SearchPage searchToggler={this.searchToggler} />
         ) : (
           <div className='list-books'>
             <div className='list-books-title'>
@@ -73,14 +72,20 @@ class BooksApp extends React.Component {
             <div className='list-books-content'>
               <div>
                 <Bookshelf
+                  handelBooksUpdate={this.handelBooksUpdate}
                   name='Currently Reading'
                   books={this.state.booksReading}
                 />
                 <Bookshelf
+                  handelBooksUpdate={this.handelBooksUpdate}
                   name='Want to Read'
                   books={this.state.booksWishlist}
                 />
-                <Bookshelf name='Read' books={this.state.booksRead} />
+                <Bookshelf
+                  handelBooksUpdate={this.handelBooksUpdate}
+                  name='Read'
+                  books={this.state.booksRead}
+                />
               </div>
             </div>
             <div className='open-search'>
