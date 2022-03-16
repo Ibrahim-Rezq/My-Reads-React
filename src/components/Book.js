@@ -19,7 +19,7 @@ export default class Book extends Component {
     }
   };
   render() {
-    const { title, shelf, authors, imageLinks } = this.props.book;
+    const { title, authors, imageLinks } = this.props.book;
     return (
       <div className='book'>
         <div className='book-top'>
@@ -32,8 +32,8 @@ export default class Book extends Component {
             }}
           />
           <div className='book-shelf-changer'>
-            <select onChange={this.handelUpdate}>
-              <option value='move' disabled selected>
+            <select onChange={this.handelUpdate} defaultValue={'move'}>
+              <option value='move' disabled>
                 Move to...
               </option>
               <option value='currentlyReading'>Currently Reading</option>

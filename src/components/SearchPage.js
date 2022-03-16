@@ -22,6 +22,7 @@ export default class SearchPage extends Component {
   };
   handelSerach = (e) => {};
   render() {
+    console.log('hi');
     const books = this.state.books;
     const searchToggler = this.props.searchToggler;
     return (
@@ -44,7 +45,10 @@ export default class SearchPage extends Component {
               books.map((book) => {
                 return (
                   <li key={book.id}>
-                    <Book book={book} />
+                    <Book
+                      handelBooksUpdate={this.props.handelBooksUpdate}
+                      book={book}
+                    />
                   </li>
                 );
               })}

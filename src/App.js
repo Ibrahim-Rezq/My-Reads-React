@@ -1,20 +1,28 @@
 import React from 'react';
 import * as BooksAPI from './BooksAPI';
-import './App.css';
+import './css/App.css';
 import Bookshelf from './components/Bookshelf';
 import SearchPage from './components/SearchPage';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
 class BooksApp extends React.Component {
   state = {
-    /**
-     * TODO: Instead of using this state variable to keep track of which page
-     * we're on, use the URL in the browser's address bar. This will ensure that
-     * users can use the browser's back and forward buttons to navigate between
-     * pages, as well as provide a good URL they can bookmark and share.
-     */
     showSearchPage: false,
-    booksRead: [],
-    booksReading: [],
-    booksWishlist: [],
+    books: [],
+    shelfs: [
+      {
+        name: 'Currently Reading',
+        shelf: 'currentlyReading',
+      },
+      {
+        name: 'Want to Read',
+        shelf: 'wantToRead',
+      },
+      {
+        name: 'Read',
+        shelf: 'read',
+      },
+    ],
   };
 
   componentDidMount() {
@@ -25,22 +33,14 @@ class BooksApp extends React.Component {
     try {
       const bookdata = await BooksAPI.getAll();
       this.setState({ books: await bookdata });
-      this.setShelfs();
     } catch {
       console.error('error');
     }
   };
-  setShelfs = () => {
-    this.setState({
-      booksRead: this.state.books.filter((book) => {
-        return book.shelf === 'read';
-      }),
-      booksReading: this.state.books.filter((book) => {
-        return book.shelf === 'currentlyReading';
-      }),
-      booksWishlist: this.state.books.filter((book) => {
-        return book.shelf === 'wantToRead';
-      }),
+
+  handelFilter = (shelf) => {
+    return this.state.books.filter((book) => {
+      return book.shelf === shelf;
     });
   };
 
@@ -54,48 +54,53 @@ class BooksApp extends React.Component {
     theBook.shelf = currShelf;
     this.setState({ books: [...fillterdBooks, theBook] });
     console.log(this.state.books);
-    this.setShelfs();
-    console.log('hi');
   };
+
   searchToggler = () => this.setState({ showSearchPage: false });
   render() {
     console.log(this.state.books);
     return (
-      <div className='app'>
-        {this.state.showSearchPage ? (
-          <SearchPage searchToggler={this.searchToggler} />
-        ) : (
-          <div className='list-books'>
-            <div className='list-books-title'>
-              <h1>MyReads</h1>
-            </div>
-            <div className='list-books-content'>
-              <div>
-                <Bookshelf
-                  handelBooksUpdate={this.handelBooksUpdate}
-                  name='Currently Reading'
-                  books={this.state.booksReading}
-                />
-                <Bookshelf
-                  handelBooksUpdate={this.handelBooksUpdate}
-                  name='Want to Read'
-                  books={this.state.booksWishlist}
-                />
-                <Bookshelf
-                  handelBooksUpdate={this.handelBooksUpdate}
-                  name='Read'
-                  books={this.state.booksRead}
-                />
+      <Router>
+        <div className='app'>
+          <Switch>
+            <Route exact path='/search'>
+              <SearchPage
+                handelBooksUpdate={this.handelBooksUpdate}
+                searchToggler={this.searchToggler}
+              />
+            </Route>
+            <Route exact path='/'>
+              <div className='list-books'>
+                <div className='list-books-title'>
+                  <h1>MyReads</h1>
+                </div>
+                <div className='list-books-content'>
+                  <div>
+                    {this.state.shelfs.map((shelf) => {
+                      return (
+                        <Bookshelf
+                          handelBooksUpdate={this.handelBooksUpdate}
+                          name={shelf.name}
+                          books={this.handelFilter(shelf.shelf)}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className='open-search'>
+                  <button
+                    onClick={() => this.setState({ showSearchPage: true })}>
+                    Add a book
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className='open-search'>
-              <button onClick={() => this.setState({ showSearchPage: true })}>
-                Add a book
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+            </Route>
+            <Route path='*'>
+              <h1>Error</h1>
+            </Route>
+          </Switch>
+        </div>
+      </Router>
     );
   }
 }
