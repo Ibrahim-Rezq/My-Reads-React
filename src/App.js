@@ -3,11 +3,10 @@ import * as BooksAPI from './BooksAPI';
 import './css/App.css';
 import Bookshelf from './components/Bookshelf';
 import SearchPage from './components/SearchPage';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 
 class BooksApp extends React.Component {
   state = {
-    showSearchPage: false,
     books: [],
     shelfs: [
       {
@@ -44,27 +43,33 @@ class BooksApp extends React.Component {
     });
   };
 
-  handelBooksUpdate = (id, currShelf) => {
-    const fillterdBooks = this.state.books.filter((book) => {
-      return book.id !== id;
+  handelBooksUpdate = (book, currShelf) => {
+    const fillterdBooks = this.state.books.filter((aBook) => {
+      return aBook.id !== book.id;
     });
-    const theBook = this.state.books.filter((book) => {
-      return book.id === id;
-    })[0];
-    theBook.shelf = currShelf;
-    this.setState({ books: [...fillterdBooks, theBook] });
-    console.log(this.state.books);
+    this.updateBook(book, currShelf);
+    book.shelf = currShelf;
+    this.setState({ books: [...fillterdBooks, book] });
   };
 
-  searchToggler = () => this.setState({ showSearchPage: false });
+  updateBook = async (book, shelf) => {
+    try {
+      await BooksAPI.update(book, shelf);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  handelShelfState = () => {};
+
   render() {
-    console.log(this.state.books);
     return (
       <Router>
         <div className='app'>
           <Switch>
             <Route exact path='/search'>
               <SearchPage
+                books={this.state.books}
                 handelBooksUpdate={this.handelBooksUpdate}
                 searchToggler={this.searchToggler}
               />
@@ -76,9 +81,10 @@ class BooksApp extends React.Component {
                 </div>
                 <div className='list-books-content'>
                   <div>
-                    {this.state.shelfs.map((shelf) => {
+                    {this.state.shelfs.map((shelf, i) => {
                       return (
                         <Bookshelf
+                          key={shelf.name}
                           handelBooksUpdate={this.handelBooksUpdate}
                           name={shelf.name}
                           books={this.handelFilter(shelf.shelf)}
@@ -88,10 +94,9 @@ class BooksApp extends React.Component {
                   </div>
                 </div>
                 <div className='open-search'>
-                  <button
-                    onClick={() => this.setState({ showSearchPage: true })}>
-                    Add a book
-                  </button>
+                  <Link to='/search'>
+                    <button>Add a book</button>
+                  </Link>
                 </div>
               </div>
             </Route>

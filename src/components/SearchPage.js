@@ -1,20 +1,38 @@
 import React, { Component } from 'react';
 import Book from './Book';
+import { Link } from 'react-router-dom';
 import * as BooksAPI from '../BooksAPI';
 
 export default class SearchPage extends Component {
   state = {
     books: [],
   };
+  // categories
+  // this.props.books
   handelChange = async (e) => {
+    e.persist();
     try {
       if (e.target.value) {
-        console.log(e.target.value);
         const res = await BooksAPI.search(e.target.value);
-        this.setState({ books: res });
+        if (e.target.value) {
+          if (res.length > 0) {
+            const finalBooks = res.map((resBook) => {
+              for (const book of this.props.books) {
+                if (book.id === resBook.id) {
+                  return book;
+                }
+              }
+              return resBook;
+            });
+            this.setState({
+              books: [...finalBooks],
+            });
+          }
+        } else {
+          this.setState({ books: [] });
+        }
       } else {
         this.setState({ books: [] });
-        console.log('empty');
       }
     } catch (e) {
       console.log(e);
@@ -22,19 +40,17 @@ export default class SearchPage extends Component {
   };
   handelSerach = (e) => {};
   render() {
-    console.log('hi');
     const books = this.state.books;
-    const searchToggler = this.props.searchToggler;
     return (
       <div className='search-books'>
         <div className='search-books-bar'>
-          <button className='close-search' onClick={searchToggler}>
-            Close
-          </button>
+          <Link to='/'>
+            <button className='close-search'>Close</button>
+          </Link>
           <div className='search-books-input-wrapper'>
             <input
               type='text'
-              onChange={this.handelChange}
+              onKeyUp={this.handelChange}
               placeholder='Search by title or author'
             />
           </div>
@@ -43,12 +59,18 @@ export default class SearchPage extends Component {
           <ol className='books-grid'>
             {!books.error &&
               books.map((book) => {
+                const { title, authors, imageLinks } = book;
                 return (
                   <li key={book.id}>
-                    <Book
-                      handelBooksUpdate={this.props.handelBooksUpdate}
-                      book={book}
-                    />
+                    {title &&
+                      authors &&
+                      imageLinks &&
+                      imageLinks.hasOwnProperty('smallThumbnail') && (
+                        <Book
+                          handelBooksUpdate={this.props.handelBooksUpdate}
+                          book={book}
+                        />
+                      )}
                   </li>
                 );
               })}
