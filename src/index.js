@@ -1,12 +1,9 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import './css/index.css';
-import { BrowserRouter } from 'react-router-dom';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import BooksApp from './BooksApp'
+import './css/index.css'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
-ReactDOM.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>,
-  document.getElementById('root')
-);
+const rootElement = document.querySelector('#root')
+
+rootElement && ReactDOM.createRoot(rootElement).render(<BooksApp />)
